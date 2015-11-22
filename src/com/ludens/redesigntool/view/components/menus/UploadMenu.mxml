@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="102" height="20">
+	
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import com.adobe.serialization.json.JSONDecoder;
+			import com.ludens.redesigntool.events.DataLoadedEvent;
+			
+			
+			public var uploadURL:String = "";
+			
+			private var fileReference:FileReference = new FileReference();
+			
+			private var uploadRequest:URLRequest;
+			
+			public function onUpload( ):void{
+				// show the file reference dialog box and do the upload
+				var f:FileFilter = new FileFilter("Images (*.jpg, *.jpeg, *.gif, *.png)", "*.jpg;*.jpeg;*.gif;*.png");
+				
+				fileReference.browse([f]);
+				fileReference.addEventListener(Event.SELECT, fileSelectHandler);
+				fileReference.addEventListener(Event.COMPLETE, fileCompleteHandler);
+				fileReference.addEventListener(ProgressEvent.PROGRESS, fileProgressHandler);
+				fileReference.addEventListener(SecurityErrorEvent.SECURITY_ERROR, fileSecurityErrorHandler);
+				fileReference.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, fileCompleteDataHandler);
+				fileReference.addEventListener(IOErrorEvent.IO_ERROR, fileIOErrorHandler);
+				// call the server script
+				
+			}
+			
+			private function fileSelectHandler( e:Event ):void {
+				trace("[V] UploadMenu : Start loading file:: " + fileReference.name);
+				
+				// if the size of the file is less than 2mb, we upload it, else we give a warning
+				if(fileReference.size < 1024 * 1024 * 2){
+					
+					if(!uploadURL) trace("[V] UploadMenu : ERROR uploadURL not specified!");
+					else		   trace("[V] UploadMenu : uploadURL = " + uploadURL);
+					uploadRequest = new URLRequest( uploadURL );
+					fileReference.upload( uploadRequest ); 
+				} else {
+					trace("[V] UploadMenu : file too big!");
+				}
+			}
+			
+			private function fileCompleteHandler( e:Event ):void {
+				trace("[V] UploadMenu : Loaded file: " + fileReference.name);
+				
+				
+			}
+			
+			private function fileCompleteDataHandler( e:DataEvent ):void {
+				
+				// fire an event with the image location in it 
+				var decoder:JSONDecoder = new JSONDecoder(e.data);
+				var dataObject:Object = decoder.getValue();
+				
+				/**
+				 * the server sends back a JSON object containing three attributes:
+				 * - url: the url we should use for the image
+				 * - width
+				 * - height
+				 */
+				
+				trace("[V] UploadMenu : Loaded data: " + e.data);
+				
+				// fire an event with the image location in it 
+				var evt:DataLoadedEvent = new DataLoadedEvent(DataLoadedEvent.UPLOADED_IMAGE);
+				evt.imageUrl = dataObject.url;
+				evt.imageWidth = dataObject.width;
+				evt.imageHeight = dataObject.height;
+				// tell everyone we have loaded an image 
+				dispatchEvent(evt);
+				
+				
+				
+			}
+			
+			private function fileProgressHandler( e:ProgressEvent ):void {
+				
+				// make the progressbar move
+				trace("[V] UploadMenu : % loaded: " + e.bytesLoaded / e.bytesTotal);
+			}
+			
+			private function fileSecurityErrorHandler( e:SecurityErrorEvent ):void {
+				trace("[V] UploadMenu : SECURITY ERROR");
+			}
+			
+			private function fileIOErrorHandler( e:IOErrorEvent ):void {
+				trace("[V] UploadMenu : ERROR communicating with the server");
+			}
+			
+			
+		]]>
+	</mx:Script>
+	<mx:Button x="0" y="0" label="Add Image..." click="onUpload()" height="20"/>
+</mx:Canvas>

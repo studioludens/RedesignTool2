@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   xmlns:degrafa="http://www.degrafa.com/2007"
+		   xmlns:events="flash.events.*"
+		   clipContent="false"
+		   showEffect="{zoomFade}" hideEffect="{zoomFade}"
+		   creationComplete="{creationCompleteHandler(event)}">
+	
+	<mx:Metadata>
+		[Event(name="change", type="flash.events.Event")]
+	</mx:Metadata>
+	
+	<degrafa:GeometryComposition id="balloonStyle" graphicsTarget="{ [this] }">
+		
+		<degrafa:Circle
+			id="selectionCircle"
+		    radius="{radius + 10}">
+		    <degrafa:fill>
+		    	<degrafa:SolidFill id="invisibleFill" color="0x999" alpha="0.0" />
+		    </degrafa:fill>
+		</degrafa:Circle>
+		
+		<degrafa:Circle 
+			id="anchorControl"
+			radius="{radius}" 
+			fill="{anchorFill}" />
+			
+		<degrafa:Polygon
+			id="controlIcon" 
+		    data="{iconPath}"
+		    fill="{whiteIconFill}">
+		    
+		    <degrafa:transform>
+			    <degrafa:TransformGroup>
+			    	<degrafa:ScaleTransform
+						id="scaleTransform"
+					    centerX="{0}" centerY="{0}"
+					    scale="{2*radius*iconRatio}" />
+					<degrafa:TranslateTransform
+					    x="{-radius*iconRatio}" y="{-radius*iconRatio}" />
+			    </degrafa:TransformGroup>				
+			</degrafa:transform>
+			
+		</degrafa:Polygon>
+		    
+						
+		<degrafa:fills>
+			<degrafa:ComplexFill id="anchorFill" >
+				<degrafa:SolidFill
+					id="cpSolidColor" 
+					color="{this.getStyle('themeColor')}" 
+					alpha="{cpAlpha}" />
+				<degrafa:RadialGradientFill>
+					<degrafa:GradientStop color="0xffffff" alpha="{0.2}" ratio="0.4" />
+					<degrafa:GradientStop color="0xffffff" alpha="{0}" ratio="1" />
+				</degrafa:RadialGradientFill>
+			</degrafa:ComplexFill>
+			<degrafa:LinearGradientFill id="whiteIconFill" angle="90">
+				<degrafa:GradientStop color="0xffffff" ratio="0" alpha="0.8" /> 
+				<degrafa:GradientStop color="0xdddddd" ratio="1" alpha="0.8" />
+			</degrafa:LinearGradientFill>
+		</degrafa:fills>
+						
+	</degrafa:GeometryComposition>
+	
+	<mx:Fade id="fadeIn"  alphaFrom="{this.alpha}" alphaTo="{this._alphaOnShow}" duration="300" />
+	<mx:Fade id="fadeOut" alphaFrom="{this.alpha}" alphaTo="0" duration="300" />
+    
+    <mx:Parallel id="zoomFade" duration="200">
+    	<mx:Fade />
+    	<mx:Zoom /> 
+    </mx:Parallel>
+	
+	<mx:AnimateProperty 
+		id="resize" 
+		property="radius" duration="200"
+		
+		fromValue="{radius}" 
+		toValue="{radius * 1.3}"/>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.ludens.redesigntool.events.DragEvent;
+			import mx.effects.easing.Cubic;
+			import mx.core.Application;
+			import mx.binding.utils.BindingUtils;
+		
+			[Bindable]
+			private var cpAlpha		:Number = 0.6;
+			[Bindable]
+			public var radius		:Number = 10;
+			
+			[Bindable]
+			private var iconRatio	:Number = 0.65;
+			
+			[Bindable]
+			private var _alphaOnShow:Number = 1;
+			private var _alphaOnEdit:Number = 0.4;
+			
+			public var verticalLock		:Boolean = false;
+			public var horizontalLock	:Boolean = false;
+			
+			public var minX		:Number;
+			public var maxX		:Number;
+			public var minY		:Number;
+			public var maxY		:Number;
+			
+			[Bindable]
+			public var iconPath				:String = ""; 
+			
+			public static const ARROW_RIGHT 		:String = "0,0.717 0.166,0.718 0.573,0.718 0.573,0.930 0.995,0.508 0.569,0.083 0.569,0.296 0,0.296";
+			public static const FOUR_ARROWS 		:String = "0.426,0.568 0.426,0.783 0.285,0.783 0.497,0.995 0.71,0.781 0.57,0.781 0.57,0.568 0.568,0.568 0.782,0.568 0.782,0.71 0.993,0.498 0.78,0.285 0.78,0.427 0.568,0.427 0.568,0.211 0.708,0.211 0.497,0 0.283,0.213 0.425,0.213 0.425,0.427 0.427,0.426 0.211,0.426 0.211,0.285 0,0.496 0.213,0.709 0.213,0.568 0.427,0.568";
+			public static const HORIZONTAL_ARROWS 	:String = "0.57,0.604 0.568,0.604 0.682,0.604 0.682,0.816 0.993,0.498 0.68,0.179 0.68,0.392 0.568,0.392 0.425,0.392 0.427,0.391 0.312,0.391 0.312,0.179 0,0.496 0.313,0.815 0.313,0.604 0.427,0.604 0.426,0.604";			
+			
+			public override function styleChanged(property:String):void {
+				super.styleChanged(property);
+				cpSolidColor.color = getStyle(property);
+			}
+			
+			private function creationCompleteHandler(e:Event):void {
+				
+				addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+				addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);		
+				addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+				
+				styleChanged("themeColor");
+			}
+			
+			private function mouseDownHandler(e:MouseEvent):void {
+				
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageMouseMoveHandler);
+				stage.addEventListener(MouseEvent.MOUSE_UP, stageMouseUpHandler);
+				removeEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+				
+				this.alpha = _alphaOnEdit;
+				
+				var event:DragEvent = new DragEvent(DragEvent.DRAG_START);
+				event.mousePoint = new Point(x,y);
+				
+				dispatchEvent( event );
+			}
+			
+			private function mouseOverHandler(e:MouseEvent):void {
+				resize.play( [anchorControl] , false);
+			}
+			
+			private function mouseOutHandler(e:MouseEvent):void {
+				resize.play( [anchorControl] , true);			
+			}
+			
+			private function stageMouseMoveHandler(e:MouseEvent):void {
+				if( !horizontalLock ) {
+					x = this.parent.mouseX;
+					if(minX && minX > x) x = minX;
+					if(maxX && maxX < x) x = maxX;
+				}
+				if( !verticalLock ) {
+					y = this.parent.mouseY;
+					if(minY && minY > y) y = minY;
+					if(maxY && maxY < y) y = maxY;	
+				}
+				
+				var dragEvent:DragEvent = new DragEvent(DragEvent.DRAG_MOVE);
+				dragEvent.mousePoint = new Point(x,y);
+				
+				dispatchEvent( dragEvent );
+				
+				// and for the stupid listeners out there, fire a change event
+				var event:Event = new Event(Event.CHANGE);
+				dispatchEvent( event );
+				
+			}
+			
+			private function stageMouseUpHandler(e:MouseEvent):void {
+				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageMouseMoveHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_UP, stageMouseUpHandler);
+				addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+				
+				this.alpha = _alphaOnShow;
+			}
+			
+		]]>
+	</mx:Script>
+	
+</mx:Canvas>

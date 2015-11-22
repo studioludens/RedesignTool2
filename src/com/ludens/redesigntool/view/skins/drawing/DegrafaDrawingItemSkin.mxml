@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin:DrawingItemSkinBase xmlns:mx="http://www.adobe.com/2006/mxml"
+		   width="{_width}" height="{_height}"
+		   xmlns:skin="com.ludens.redesigntool.view.skins.drawing.*"
+		   xmlns:filters="flash.filters.*"
+		   xmlns:degrafa="http://www.degrafa.com/2007" >
+		   
+		   
+	<degrafa:GeometryComposition id="line" graphicsTarget="{ [this] }" >
+		
+		<degrafa:Polyline id="polyLine" data="{ _dataString }" filters="{ [bevelFilter, glowFilter] }" autoClose="{ _closed }"  />
+		
+		<degrafa:stroke>
+			<degrafa:SolidStroke id="polyStroke" color="{_lineColor}" alpha="1" weight="2" />
+		</degrafa:stroke>
+		
+		<degrafa:fills>
+			<degrafa:SolidFill id="solidFill" color="{ _fillColor }" alpha="1" />
+		</degrafa:fills>
+		
+		<degrafa:filters>
+			<filters:BevelFilter id="bevelFilter" quality="3" distance="4" strength="1" blurX="6" blurY="6" shadowAlpha="0.5" highlightAlpha="0.5" />
+			<filters:GlowFilter id="glowFilter" quality="1" blurX="4" blurY="4" alpha="0.01" />
+		</degrafa:filters>
+		
+	</degrafa:GeometryComposition>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			override protected function commitProperties():void {
+				
+				super.commitProperties();	
+								
+				if( _closed ) 
+					polyLine.fill = null;
+				else
+					polyLine.fill = null;
+			}
+		]]>
+	</mx:Script>
+	
+</skin:DrawingItemSkinBase>

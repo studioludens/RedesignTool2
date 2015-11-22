@@ -1,0 +1,39 @@
+/* CSS file */
+
+Application {
+	backgroundGradientColors : #E5E5E5, #EEEEEE;
+	backgroundColor:			#EEEEEE;
+}
+
+
+.handWritten {
+	fontFamily: "DadHand";
+	fontWeight: normal;
+}
+
+.simpleType {
+	fontFamily: "Calibri";
+}
+
+.title {
+	fontFamily: "Calibri";
+	fontSize: 28;
+	color: #186795;
+	
+}
+
+GraphicSkinBase {
+	borderColor: #186795;
+	borderThickness: 1;
+}
+
+
+
+@font-face {
+
+	src:url("../fonts/dadha___.ttf");
+	
+	fontFamily: "DadHand";
+	fontWeight: normal;
+}
+

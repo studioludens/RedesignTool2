@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin:GraphicSkinBase xmlns:mx="http://www.adobe.com/2006/mxml"
+		   width="{_width}" height="{_height}"
+		   xmlns:skin="com.ludens.redesigntool.view.skins.graphic.*"
+		   xmlns:filters="flash.filters.*"
+		   xmlns:degrafa="http://www.degrafa.com/2007">
+		   
+		   
+	<mx:Image source="{_url}" width="{_width}" height="{_height}" x="0" y="0"/>
+	
+</skin:GraphicSkinBase>

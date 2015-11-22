@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin:CommentSkinBase xmlns:mx="http://www.adobe.com/2006/mxml"
+					  xmlns:skin="com.ludens.redesigntool.view.skins.comment.*"
+					  xmlns:components="com.ludens.text.components.*"
+					  xmlns:degrafa="http://www.degrafa.com/2007"
+					  xmlns:filters="flash.filters.*"
+					  width="{_width}" height="{contentBox.height}"
+					  filters="{ [glow] }">
+	
+	<!-- degrafa styling -->
+	
+	<degrafa:GeometryComposition id="commentStyle" graphicsTarget="{ [contentBox] }">
+		
+		<degrafa:RoundedRectangle id="commentBox"
+								  x="{-_horizontalPadding}" y="{-_verticalPadding}"
+								  width="{this.width + 2*_horizontalPadding}" height="{this.height + 2*_verticalPadding}"
+								  cornerRadius="8"
+						  		  fill="{gradientCommentFill}" />
+						  		  
+		<degrafa:fills>
+			<degrafa:SolidFill id="solidCommentFill" color="0x999" alpha="0.02" />
+			<degrafa:LinearGradientFill id="gradientCommentFill" angle="90">
+				<degrafa:GradientStop ratio="0" color="0xAAA" alpha="1" />
+				<degrafa:GradientStop ratio="1" color="0x6F6F6F" alpha="1" />
+			</degrafa:LinearGradientFill>
+		</degrafa:fills>
+	
+	</degrafa:GeometryComposition>
+		
+	<!-- anchor -->
+	
+	<degrafa:GeometryComposition graphicsTarget="{ [this] }">
+		
+		<degrafa:Path id="anchorLine" data="{ 'M 0,0' + 'Q 0,' + ( _boxY + contentBox.height/2 ) + ',' + (_boxX + _width/2)  + ',' + (_boxY + contentBox.height/2) }" />
+		
+		<degrafa:Circle id="anchor" radius="5">
+			<degrafa:fill>
+				<degrafa:LinearGradientFill angle="90">
+					<degrafa:GradientStop ratio="0" color="0xAAA" alpha="1" />
+					<degrafa:GradientStop ratio="1" color="0x6F6F6F" alpha="1" />
+				</degrafa:LinearGradientFill>
+			</degrafa:fill>
+		</degrafa:Circle>
+		
+		<degrafa:stroke>
+			<degrafa:SolidStroke color="0x000" alpha="0.1"/>
+		</degrafa:stroke>
+		
+	</degrafa:GeometryComposition>
+	
+	<!-- filters -->
+	
+	<filters:GlowFilter 
+				id="glow"
+				strength="50" alpha="1"
+				blurX="4" blurY="4"
+				quality="2"
+				color="0x6F6F6F" />
+	
+	<!-- text boxes -->
+	
+	<mx:VBox id="contentBox" x="{_boxX}" y="{_boxY}" width="{this.width}" verticalGap="0">
+	
+		<components:AutoHeightTextArea id="titleTextField" 
+									   width="{this.width}" 
+									   text="{_title}" 
+									   color="0x222222" 
+									   fontSize="16" fontWeight="bold" styleName="simpleType"
+									   backgroundAlpha="0" borderStyle="none" />
+									   
+		<components:AutoHeightTextArea id="descriptionTextField" 
+									   width="{this.width}" 
+									   text="{_description}"
+									   color="0x222222" fontSize="12" styleName="simpleType"
+									   backgroundAlpha="0" borderStyle="none" />
+	</mx:VBox> 
+	
+	<mx:Script>
+		<![CDATA[
+			
+			
+			[Bindable]
+			private var _horizontalPadding:Number = 5;		
+			[Bindable]
+			private var _verticalPadding:Number = 3;
+			
+			
+		]]>
+	</mx:Script>
+	
+</skin:CommentSkinBase>

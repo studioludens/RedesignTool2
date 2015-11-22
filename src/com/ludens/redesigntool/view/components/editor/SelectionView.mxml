@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="{_width}" height="{_height}" 
+	
+	xmlns:editor="com.ludens.redesigntool.view.components.editor.*" 
+	 clipContent="false" creationComplete="{onCC()}" xmlns:degrafa="http://www.degrafa.com/2007"
+	  >
+	
+	<editor:ControlPoint 		id="moveControl"
+		iconPath="{ControlPoint.FOUR_ARROWS}" 
+		x="{_moveX}" y="{_moveY}" 
+		visible="{_moveEnabled}" radius="30">
+	</editor:ControlPoint>
+	<!--
+	<editor:ControlPoint 		id="scaleControl" 
+		
+		x="{_scaleX}" y="{_scaleY}"
+		visible="{_scaleEnabled}" rotation="45">
+	</editor:ControlPoint>
+	-->
+	<!--
+	<editor:ControlPoint 		id="rotateControl" 
+		x="{_rotateX}" y="{_rotateY}" 
+		visible="{_rotateEnabled}">
+	</editor:ControlPoint>
+	-->
+	
+	<!--
+	<degrafa:GeometryComposition>
+		<degrafa:AdvancedRectangle left="{_x}" top="{_y}" bottom="{_height + _x}" right="{_width + _x}"
+	/>
+	</degrafa:GeometryComposition>
+	-->
+	
+	<mx:Script>
+		<![CDATA[
+			import com.ludens.redesigntool.view.components.editor.drawingitem.DrawingItemView;
+			import com.ludens.redesigntool.events.DragEvent;
+			import com.ludens.data.Bounds;
+			import com.ludens.redesigntool.events.SelectionEditEvent;
+			
+			public const SCALE_FACTOR:Number = 100;
+			
+			//--------------------------------------------------------------------------
+		    //
+		   	//  Public Properties
+		  	//
+			//--------------------------------------------------------------------------
+			
+			/**
+			 * this is used in dragging the item across the canvas
+			 * <p>It stores the starting position when beginning to drag</p>
+			 */
+			public var dragStartPosition:Point;
+			
+			// this is an array of SketchItemBaseView objects
+			private var _selectedObjects:Array;
+			private var _selectionBounds:Bounds;
+			
+			
+			protected var _data:Object;
+			
+			/**
+			 * the data object contains a copy of the model's VO
+			 */
+			/*
+			override public function set data( value:Object ):void {	
+				
+				_data = value;
+				
+				
+					
+				
+				updateBasePropertiesWithData();
+				//updateSkinData();
+				invalidateProperties();
+			}
+			override public function get data():Object {		
+				
+				// actually, we should check if the data is up to date here
+				updateDataWithBaseProperties();
+				//var dataCopy:Object = ObjectUtil.copy( _data ) as Object;
+				//return dataCopy;
+				return _data;
+			}
+			*/
+			
+			public function set selectedObjects(value:Array):void{
+				_selectedObjects = value;
+				
+				// get the right selection bounds
+				updateBounds();
+				// now update the view
+				updateBaseProperties();
+				
+			}
+			
+			public function get selectedObjects():Array {
+				return _selectedObjects;
+			}
+			
+			private var _scale:Number;
+			
+			public function get scale():Number{
+				return _scale;
+			}
+			public function set scale(value:Number):void{
+				_scale = value;
+			}
+			
+			public function onCC():void{
+				
+
+				moveControl.addEventListener(DragEvent.DRAG_START, onMoveStart);
+				moveControl.addEventListener(DragEvent.DRAG_MOVE, onMove);
+				//scaleControl.addEventListener(Event.CHANGE, onScale);
+				//rotateControl.addEventListener(Event.CHANGE, onRotate);
+				
+				
+			}
+		
+			[Bindable] protected var _width:Number;
+			[Bindable] protected var _height:Number;
+			
+			[Bindable] protected var _x:Number;
+			[Bindable] protected var _y:Number;
+			
+			[Bindable] protected var _moveX:Number = 0;
+			[Bindable] protected var _moveY:Number = 0;
+			
+			/*
+			center the scale icon
+			*/
+			[Bindable] protected var _scaleX:Number = _width / 2;
+			[Bindable] protected var _scaleY:Number = _height / 2;
+			
+			[Bindable] protected var _rotateX:Number = _width / 2;
+			[Bindable] protected var _rotateY:Number = _height / 2;
+			
+			/**
+			 * only view a control if it's enabled
+			 */
+			[Bindable] protected var _moveEnabled:Boolean = true;
+			[Bindable] protected var _scaleEnabled:Boolean = true;
+			[Bindable] protected var _rotateEnabled:Boolean = true;
+			
+			//--------------------------------------------------------------------------
+		    //
+		   	//  Private methods
+		  	//
+			//--------------------------------------------------------------------------
+			
+			private function updateBounds():void {
+				
+				if(_selectedObjects.length == 0){
+					//trace("[V] Selection : WARNING, update Bounds on empty selection!");
+					return;
+					
+				}
+				
+				_selectionBounds = new Bounds(Number.POSITIVE_INFINITY, 
+													Number.POSITIVE_INFINITY, 
+													Number.NEGATIVE_INFINITY, 
+													Number.NEGATIVE_INFINITY );
+			
+				//get the bounds of the selection
+				for each( var itemView:SketchItemBaseView in _selectedObjects){
+					//var itemView:SketchItemBaseView = this.getSketchItemViewById(id);
+					
+					if(itemView.data.x < _selectionBounds.left) 
+						_selectionBounds.left = itemView.data.x;
+					if(itemView.data.y < _selectionBounds.top) 
+						_selectionBounds.top = itemView.data.y;
+					if(itemView.data.x + itemView.data.width > _selectionBounds.right) 
+						_selectionBounds.right = itemView.data.x + itemView.data.width;
+					if(itemView.data.y + itemView.data.height > _selectionBounds.bottom) 
+						_selectionBounds.bottom = itemView.data.y + itemView.data.height;
+				}
+			}
+			
+			private function updateBaseProperties():void{
+				
+				if(_selectedObjects.length == 0){
+					//trace("[V] Selection : WARNING, update Bounds on empty selection!");
+					return;
+					
+				}
+				
+				// do a hack where we place the object on a specific spot depending on the type of
+				// object selected
+				
+				if(_selectedObjects.length == 1 && 
+					_selectedObjects[0] is CommentView || _selectedObjects[0] is DrawingItemView){
+					// if it's a comment alone, place the anchor on the top left corner
+					_moveX = _selectionBounds.left;
+					_moveY = _selectionBounds.top;
+					
+					// and make it smaller
+					moveControl.radius = 15;
+					
+				} else {
+					// otherwise, place it in the middle
+					_moveX = _selectionBounds.horizontalMiddle;
+					_moveY = _selectionBounds.verticalMiddle;
+					
+					// and make it bigger
+					moveControl.radius = 30;
+				}
+				
+				
+				
+			}
+			/**
+			 * Checks the <CODE>data</CODE> object for specific properties.
+			 * 
+			 * If they exist, are of the right type and have a different value
+			 * than the current sketch item's property, it applies them and
+			 * will call <CODE>invalidateDisplayList()</CODE>
+			 */
+			/*
+			protected function updateBasePropertiesWithData():void {
+				
+				// moveX
+				if( _data.moveX && _data.moveX != _moveX ) {
+					_moveX = _data.moveX;
+					invalidateDisplayList();
+				}
+				
+				// moveY
+				if( _data.moveY && _data.moveY != _moveY ) {
+					_moveY = _data.moveY;
+					invalidateDisplayList();
+				}
+				
+				// scaleX
+				if( _data.scaleX && _data.scaleX != _scaleX ) {
+					_scaleX = _data.scaleX;
+					invalidateDisplayList();
+				}
+				
+				// scaleY
+				if( _data.scaleY && _data.scaleY != _scaleY ) {
+					_scaleY = _data.scaleY;
+					invalidateDisplayList();
+				}
+				
+				// rotateX
+				if( _data.rotateX && _data.rotateX != _rotateX ) {
+					_rotateX = _data.rotateX;
+					invalidateDisplayList();
+				}
+				
+				// rotateY
+				if( _data.rotateY && _data.rotateY != _rotateY ) {
+					_rotateY = _data.rotateY;
+					invalidateDisplayList();
+				}
+				
+				
+				// width	
+				if( _data.width && _data.width != _width ) {
+					_width = _data.width;
+					invalidateDisplayList();
+				}
+				
+				// height
+				if( _data.height && _data.height != _height ) {
+					_height = _data.height;
+					invalidateDisplayList();
+				}
+				
+				// x	
+				if( _data.x && _data.x != _x ) {
+					_x = _data.x;
+					invalidateDisplayList();
+				}
+				
+				// y	
+				if( _data.y && _data.y != _y ) {
+					_y = _data.y;
+					invalidateDisplayList();
+				}
+				
+				// moveEnabled
+				if( _data.moveEnabled is Boolean && _data.moveEnabled != _moveEnabled ) {
+					_moveEnabled = _data.moveEnabled;
+					invalidateDisplayList();
+				}
+				
+				// scaleEnabled
+				if( _data.scaleEnabled is Boolean && _data.scaleEnabled != _scaleEnabled ) {
+					_scaleEnabled = _data.scaleEnabled;
+					invalidateDisplayList();
+				}
+				
+				// rotateEnabled
+				if( _data.rotateEnabled is Boolean && _data.rotateEnabled != _rotateEnabled ) {
+					_rotateEnabled = _data.rotateEnabled;
+					invalidateDisplayList();
+				}
+				
+			}
+			*/
+			
+			/**
+			 * this function implements the updating of the data object to represent
+			 * the latest state
+			 */ 
+			/*
+			protected function updateDataWithBaseProperties():void {
+				
+				_data.moveX = _moveX;
+				_data.moveY = _moveY;
+				
+				_data.scaleX = _scaleX;
+				_data.scaleY = _scaleY;
+				
+				_data.x = _x;
+				_data.y = _y;
+				
+				_data.width = _width;
+				_data.height = _height;
+				
+				_data.rotateX = _rotateX;
+				_data.rotateY = _rotateY;
+				
+			}*/
+			
+			private var _startMousePoint:Point;
+			
+			/** 
+			 * this function is called when we start moving the move indicator
+			 * <p> We fire a SelectionEditEvent to show we're starting editing the
+			 * selection</p>
+			 */
+			private function onMoveStart(e:DragEvent):void{
+				_startMousePoint = e.startPoint;
+				//trace("[V] Selection onMoveStart");
+				var event:SelectionEditEvent = new SelectionEditEvent( SelectionEditEvent.START_EDIT );
+				event.startMoveX = e.mousePoint.x;
+				event.startMoveY = e.mousePoint.y;
+				
+				event.bounds = _selectionBounds;
+				
+				dispatchEvent( event );
+				
+			}
+			
+			private function onMove(e:DragEvent):void{
+				
+				//trace("[V] Selection onMove");
+				// update the data object
+				//_x = moveControl.x;
+				//_y = moveControl.y;
+				
+				//scaleControl.x = moveControl.x;
+				//scaleControl.y = moveControl.y - SCALE_FACTOR;
+				// and fire an event 
+				var event:SelectionEditEvent = new SelectionEditEvent( SelectionEditEvent.EDIT );
+				event.moveX = e.mousePoint.x;
+				event.moveY = e.mousePoint.y;
+				
+				event.bounds = _selectionBounds;
+				
+				
+				
+				
+				dispatchEvent( event );
+				
+					
+			}
+			
+			private function onRotate(e:Event):void{
+				
+			}
+			
+			private function onScale(e:Event):void{
+				
+				/*
+				var event:SelectionEditEvent = new SelectionEditEvent( SelectionEditEvent.EDIT );
+				
+				var p:Point = new Point( scaleControl.x - moveControl.x, scaleControl.y - moveControl.y);
+				
+				event.scale = p.length / SCALE_FACTOR; // bit arbitrary, isn't it?
+				
+				dispatchEvent( event );
+				*/
+				
+			}
+			
+			
+			
+		]]>
+	</mx:Script>
+</mx:Canvas>

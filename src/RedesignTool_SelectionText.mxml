@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" 
+	xmlns:editor="com.ludens.redesigntool.view.components.editor.*"
+	creationComplete="{onCC()}" xmlns:degrafa="http://www.degrafa.com/2007">
+	<editor:SelectionView id="sv">
+		
+	</editor:SelectionView>
+	
+	
+	<degrafa:GeometryComposition>
+		<degrafa:AdvancedRectangle left="30" top="30" bottom="330" right="200" >
+			<degrafa:stroke>
+				<degrafa:SolidStroke color="0xFF0000" alpha="1"/>
+			</degrafa:stroke>
+		</degrafa:AdvancedRectangle>
+	</degrafa:GeometryComposition>
+	
+	
+	<mx:Script>
+		<![CDATA[
+			
+			public function onCC():void {
+				sv.data = {
+							x: 100, 
+							y:100, 
+							width: 300, 
+							height: 300, 
+							moveEnabled: true, 
+							scaleEnabled: true,
+							scaleX: 300,
+							scaleY: 300
+						   };
+			}
+			
+		]]>
+	</mx:Script>
+</mx:Application>

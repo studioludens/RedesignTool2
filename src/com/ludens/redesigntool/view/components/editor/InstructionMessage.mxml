@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   width="100%" height="100%" >
+	
+	<mx:Label id="message" text="{ _text }"
+			  fontSize="{ this.width / 30 }" color="0xeeeeee" fontWeight="bold"
+			  horizontalCenter="0" verticalCenter="0" filters="{ [glowFilter] }" />
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.effects.Fade;
+			
+			[Bindable] private var _text:String = "";
+			
+			[Bindable] private var glowFilter:GlowFilter = 
+							new GlowFilter(0x222222, 0.5, 20, 20, 2, 3);
+			
+			public function set text(value:String):void { 	
+				_text = value;
+			}
+			public function get text():String {
+				return _text;
+			}
+			
+		]]>
+	</mx:Script>
+	
+</mx:Canvas>

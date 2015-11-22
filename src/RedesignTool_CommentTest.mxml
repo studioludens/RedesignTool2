@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" addedToStage="addedToStageHandler(event)" creationComplete="creationCompleteHandler(event)" xmlns:components="com.ludens.text.components.*">
+	<mx:Label text="redesign tool" color="0xffffff" fontSize="14" fontWeight="bold" x="10" y="10"/>
+
+	<mx:Style source="../assets/style/style.css" />
+	
+	<mx:VBox x="5" y="30">
+		<mx:Label text="box width" color="0xffffff" />
+		<mx:HSlider minimum="50" maximum="400" value="100" liveDragging="true" change="sliderChangeHandler(event)" />
+		<mx:Label text="box X" color="0xffffff" />
+		<mx:HSlider id="boxXSlider" minimum="-300" maximum="300" value="100" liveDragging="true" change="setBoxX(event)" />
+		<mx:Label text="box Y" color="0xffffff" />
+		<mx:HSlider id="boxYSlider" minimum="-300" maximum="300" value="50" liveDragging="true" change="setBoxY(event)" />
+		
+		<mx:ToggleButtonBar x="5" y="50" valueCommit="skinChangeHandler(event)">
+			<mx:Array>
+				<mx:String>simple skin</mx:String>
+				<mx:String>post-it skin</mx:String>
+			</mx:Array>
+		</mx:ToggleButtonBar>
+	</mx:VBox>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.sliderClasses.Slider;
+			import mx.controls.ToggleButtonBar;
+			import mx.controls.HSlider;
+			import com.ludens.redesigntool.view.components.editor.CommentView;
+			import org.puremvc.as3.core.View;
+		
+			import com.ludens.redesigntool.*;
+			import com.ludens.text.*;
+			
+			import mx.managers.FocusManager;
+			
+			public var commentView	:CommentView;
+			public var commentData	:Object = { x:300, y:300, boxX:150, boxY:30, width:150,
+									   		    title:"title of some sort", 
+									   		    description:"This is a bit of text that could be considered a futile attempt at making this space look a little less empty", 
+									   		    skinName:"NOTE_COMMENT_SKIN" };
+			
+			private function creationCompleteHandler(e:Event):void {
+				
+				commentView = new CommentView();
+				addChild(commentView);
+				
+				commentData.boxX = boxXSlider.value;
+				commentData.boxY = boxYSlider.value;
+				
+				commentView.data = commentData;	
+			}
+			
+			private function addedToStageHandler(e:Event):void {
+				stage.addEventListener(MouseEvent.CLICK, mouseClickHandler);
+			}
+			
+			private function sliderChangeHandler(e:Event):void {
+				commentData.width = (e.target as HSlider).value;
+				commentView.data = commentData;
+			}
+			
+			private function skinChangeHandler(e:Event):void {
+				
+				var index:int = (e.target as ToggleButtonBar).selectedIndex;
+				
+				if(commentView != null) {
+				
+					if(index == 0)
+						commentData.skinName = "SIMPLE_COMMENT_SKIN";
+					if(index == 1)
+						commentData.skinName = "NOTE_COMMENT_SKIN";
+				
+					commentView.data = commentData;
+				}
+			}
+			
+			private function setBoxX(e:Event):void {
+				commentData.boxX = (e.target as Slider).value;
+				commentView.data = commentData;
+			}
+			
+			private function setBoxY(e:Event):void {
+				commentData.boxY = (e.target as Slider).value;
+				commentView.data = commentData;
+			}
+			
+			private function mouseClickHandler(e:MouseEvent):void {
+				
+				focusManager.deactivate();
+			}
+			
+		]]>
+	</mx:Script>
+</mx:Application>

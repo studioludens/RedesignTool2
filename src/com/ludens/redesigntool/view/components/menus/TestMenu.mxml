@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 xmlns:menu="com.ludens.redesigntool.view.components.menus.*"
+		 width="120" creationComplete="creationCompleteHandler(event)" xmlns:sephiroth="http://www.sephiroth.it/2006/mxml">
+	
+	<mx:Label text="create a new" fontSize="12" fontWeight="bold" />
+	<mx:Button id="addCommentButton"
+			   icon="@Embed('assets/media/icons/22x22/text-editor.png')" label="comment" 
+			   width="{ _buttonWidth }" click="addCommentHandler(event)" textAlign="left" horizontalGap="10" buttonMode="true"/>
+	
+	<menu:ImageUploadButton id="uploadGraphicButton" 
+							icon="@Embed('assets/media/icons/22x22/image.png')" 
+							width="{ _buttonWidth }" label="load image" textAlign="left" horizontalGap="10" buttonMode="true"
+							 uploadURL="{uploadURL}"/>	   
+
+	<mx:Button id="addDrawingItemButton"
+		 	   icon="@Embed('assets/media/icons/22x22/highlight.png')" label="drawing" 
+			   width="{ _buttonWidth }" click="addDrawingItemHandler(event)" textAlign="left" horizontalGap="10" buttonMode="true" />
+	
+	<mx:Spacer height="10" />
+	
+	<mx:Button id="deleteSelectionButton" includeInLayout="false" visible="false" width="{ _buttonWidth }" label="delete selection" click="deleteSelectionHandler(event)" buttonMode="true"/>
+	
+	<mx:Spacer height="10" />
+	
+	<mx:VBox id="drawingControls" visible="false" includeInLayout="false">
+		
+		<mx:Label text="selection range" fontSize="10" fontWeight="bold" />
+		<mx:Spacer height="-15" />
+		<mx:HSlider id="selectionRangeSlider" width="{ _buttonWidth }" minimum="2" maximum="40"  change="sliderChangeHandler(event)" liveDragging="true" />
+		
+		<mx:HBox id="colorControls" verticalAlign="middle">
+			<mx:Label text="line"  fontWeight="bold"/>
+			<mx:Spacer width="-12" />
+			<mx:Canvas id="lineColorIcon" width="20" height="20" backgroundColor="0x000000" borderColor="0xCCCCCC" borderStyle="outset" borderThickness="6" click="showLineColorPicker(event)"  />
+			<mx:Spacer width="3" />
+			<mx:Label text="fill"  fontWeight="bold"/>
+			<mx:Spacer width="-12" />
+			<mx:Canvas id="fillColorIcon" width="20" height="20" backgroundColor="0x000000" borderColor="0xCCCCCC" borderStyle="outset" borderThickness="6" click="showFillColorPicker(event)"  />
+		</mx:HBox>
+		
+	</mx:VBox>
+	
+	<!--<mx:Button label="Undo" id="undoButton" click="undoHandler(event)"/>
+	<mx:Button label="Redo" id="redoButton" click="redoHandler(event)"/>
+	-->
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import org.sepy.events.SPickerEvent;
+			import org.sepy.controls.SColorPicker;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.events.ColorPickerEvent;
+			import mx.controls.HSlider;
+			import mx.core.IFlexDisplayObject;
+		
+			import com.ludens.redesigntool.events.PropertyUpdateEvent;
+			import com.ludens.redesigntool.events.DataLoadedEvent;
+			
+			[Bindable] public var uploadURL:String;
+			
+			[Bindable]
+			private var _buttonWidth	:Number = 120;
+			
+			private function creationCompleteHandler(e:Event):void {
+				
+				uploadGraphicButton.addEventListener( DataLoadedEvent.UPLOADED_IMAGE, imageDataLoadedHandler );
+			}
+			
+			public function showSelectionControls():void {
+				deleteSelectionButton.visible = true;	
+				deleteSelectionButton.includeInLayout = true;
+			}
+			public function hideSelectionControls():void {	
+				deleteSelectionButton.visible = false;			
+				deleteSelectionButton.includeInLayout = false;
+			}
+			
+			public function showDrawingControls():void {
+				drawingControls.visible = true;	
+				drawingControls.includeInLayout = true;
+			}
+			public function hideDrawingControls():void {
+				drawingControls.visible = false;	
+				drawingControls.includeInLayout = false;
+			}
+			
+			public function setLineColor( color:uint ):void {			
+				lineColorIcon.setStyle( "backgroundColor", color );
+			}
+			
+			public function setFillColor( color:uint ):void {			
+				fillColorIcon.setStyle( "backgroundColor", color );
+			}
+			
+			public function set selectionRange( range:int ):void {
+				selectionRangeSlider.value = range;
+			}
+			public function get selectionRange():int {
+				return selectionRangeSlider.value;
+			}
+
+
+			
+			
+			private function addCommentHandler(e:Event):void {
+				
+				var event:Event = new Event("addComment");
+				dispatchEvent( event );
+			}
+			
+					
+			private function imageDataLoadedHandler(e:DataLoadedEvent):void {
+			
+				var evt:DataLoadedEvent = new DataLoadedEvent( DataLoadedEvent.UPLOADED_IMAGE );
+				evt.imageUrl = e.imageUrl;
+				evt.imageWidth = e.imageWidth;
+				evt.imageHeight = e.imageHeight;
+				dispatchEvent( evt );
+			}
+			
+			
+			private function addDrawingItemHandler(e:Event):void {
+				
+				var event:Event = new Event("addDrawingItem");
+				dispatchEvent( event );
+			}
+			
+			
+			private function deleteSelectionHandler(e:Event):void {
+				var event:Event = new Event("deleteSelection");
+				dispatchEvent( event );
+			}
+			
+			
+			
+			
+			private function undoHandler(e:Event ):void {
+				var event:Event = new Event("undo");
+				dispatchEvent( event );
+			}
+			
+			private function redoHandler(e:Event ):void {
+				var event:Event = new Event("redo");
+				dispatchEvent( event );
+			}
+			
+			private function sliderChangeHandler(e:Event):void {
+				
+				/*
+				var event:PropertyUpdateEvent = new PropertyUpdateEvent( PropertyUpdateEvent.UPDATE, 
+																		 "scaleRatio", 
+																		 (e.target as HSlider).value );
+				*/
+				
+				var event:PropertyUpdateEvent = new PropertyUpdateEvent( PropertyUpdateEvent.UPDATE, 
+																		 "selectionRange", 
+																		 (e.target as HSlider).value );
+				
+				dispatchEvent( event );
+				
+			}
+			
+			private function showLineColorPicker( event:MouseEvent ):void {
+				
+				var pickerpanel:SColorPicker = new SColorPicker();
+				pickerpanel.selectedColor = lineColorIcon.getStyle("backgroundColor");
+				pickerpanel.title = "Select Color";	
+
+				// display the 'x' close button
+				pickerpanel.showCloseButton = true;			
+
+				// show the 'Add swatch' button
+				pickerpanel.add_swatch = false;
+				
+				// enable the stage color picker
+				pickerpanel.picker_enabled = true;
+
+				pickerpanel.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void { PopUpManager.removePopUp(IFlexDisplayObject(event.target)); } );
+				//pickerpanel.addEventListener(SPickerEvent.CHANGING,   pickerevent_handler);
+				//pickerpanel.addEventListener(SPickerEvent.SWATCH_ADD, pickerevent_handler);
+				pickerpanel.addEventListener(Event.CHANGE, lineColorChangeHandler);
+				
+				PopUpManager.addPopUp(pickerpanel, this, false);
+				//PopUpManager.centerPopUp(pickerpanel);
+
+
+			}
+			
+			private function showFillColorPicker( event:MouseEvent ):void {
+				
+				var pickerpanel:SColorPicker = new SColorPicker();
+				pickerpanel.selectedColor = fillColorIcon.getStyle("backgroundColor");
+				pickerpanel.title = "Select Color";	
+
+				// display the 'x' close button
+				//pickerpanel.showCloseButton = true;			
+
+				// show the 'Add swatch' button
+				pickerpanel.add_swatch = false;
+				
+				// enable the stage color picker
+				pickerpanel.picker_enabled = true;
+
+				pickerpanel.addEventListener(CloseEvent.CLOSE, function(event:CloseEvent):void { PopUpManager.removePopUp(IFlexDisplayObject(event.target)); } );
+				//pickerpanel.addEventListener(SPickerEvent.CHANGING,   pickerevent_handler);
+				//pickerpanel.addEventListener(SPickerEvent.SWATCH_ADD, pickerevent_handler);
+				pickerpanel.addEventListener(Event.CHANGE, fillColorChangeHandler);
+				
+				PopUpManager.addPopUp(pickerpanel, this, false);
+				//PopUpManager.centerPopUp(pickerpanel);
+
+
+			}
+			
+			private function lineColorChangeHandler( event:Event ):void {
+				
+				var evt:PropertyUpdateEvent = new PropertyUpdateEvent( PropertyUpdateEvent.UPDATE );
+				evt.propertyName = "lineColor";
+				evt.newValue = ( event.target as SColorPicker ).selectedColor;
+				
+				PopUpManager.removePopUp(IFlexDisplayObject(event.target));
+				lineColorIcon.setStyle( "backgroundColor", evt.newValue );
+				
+				dispatchEvent( evt );
+			}
+			
+			private function fillColorChangeHandler( event:Event ):void {
+				
+				var evt:PropertyUpdateEvent = new PropertyUpdateEvent( PropertyUpdateEvent.UPDATE );
+				evt.propertyName = "fillColor";
+				evt.newValue = ( event.target as SColorPicker ).selectedColor;
+				
+				PopUpManager.removePopUp(IFlexDisplayObject(event.target));
+				fillColorIcon.setStyle( "backgroundColor", evt.newValue );
+				
+				dispatchEvent( evt );
+			}
+			
+		]]>
+	</mx:Script>
+</mx:VBox>

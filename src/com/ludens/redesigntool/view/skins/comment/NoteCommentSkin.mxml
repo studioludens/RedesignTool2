@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin:CommentSkinBase xmlns:mx="http://www.adobe.com/2006/mxml"
+					  xmlns:skin="com.ludens.redesigntool.view.skins.comment.*"
+					  xmlns:components="com.ludens.text.components.*"
+					  xmlns:degrafa="http://www.degrafa.com/2007"
+					  xmlns:filters="flash.filters.*"
+					  xmlns:decorators="org.degrafa.decorators.*"
+					  width="{_width}" height="{contentBox.height}" >
+
+	<!-- be sure to handle CHANGE and FOCUS_OUT to the TITLE and DESCRIPTION input fields.
+		 see below for specific functions to be called -->
+		 
+	<!-- text boxes -->
+	
+	<mx:VBox id="contentBox" x="{_boxX}" y="{_boxY}" width="{ _boxWidth }" verticalGap="0">
+	
+		<components:AutoHeightTextArea id="titleTextField" 
+									   width="{ _boxWidth }" 
+									   text="{_title}" 
+									   color="0x000000" 
+									   fontSize="16" styleName="handWritten"
+									   backgroundAlpha="0" borderStyle="none" textAlign="center" 
+									   
+									   change="titleChangedHandler(event)"
+									   focusOut="focusOutTitleHandler(event)" />
+									   
+		<components:AutoHeightTextArea id="descriptionTextField" 
+									   width="{ _boxWidth }" 
+									   text="{_description}"
+									   color="0x000000" fontSize="13" styleName="handWritten"
+									   backgroundAlpha="0" borderStyle="none" textAlign="center" 
+									   
+									   change="descriptionChangedHandler(event)"
+									   focusOut="focusOutDescriptionHandler(event)"  />	 
+	</mx:VBox>
+	
+	 
+	<!-- *** degrafa styling *** -->
+
+	<!-- note paper & shadow -->
+
+	<degrafa:GeometryComposition id="note" graphicsTarget="{ [contentBox] }">
+		
+		<degrafa:Path id="shadow" fill="{greySolid}" filters="{ [shadowBlur] }" data="M-1,2.39l92.614,1.167c0,0-0.833,19.71,0,44.141c0.833,24.43,4.164,53.082,4.164,53.082s-32.897,0.331-51.29,0.331c-17.392,0-15.393-1.032-49.485,0.056c0,0,2.996-39.311,2.996-54.58C-2,31.318-1,2.39-1,2.39z" />
+		<degrafa:Path id="paper" fill="{yellowGradient}" data="M-0.053,1.39l94.667-0.833c0,0-0.833,19.71,0,44.141c0.833,24.43,3.164,51.082,3.164,51.082s-31.897,3.331-50.29,3.331s-49.485-1.944-49.485-1.944s1.221-38.311,1.221-53.58C-0.775,28.318-0.053,1.39-0.053,1.39z" />
+		
+		<degrafa:transform>
+			<degrafa:TransformGroup id="noteScaleTransform">
+				<degrafa:ScaleTransform scaleX="{this._boxWidth / 100 }" scaleY="{this.height / 100 }" />
+				<degrafa:ScaleTransform centerX="20" centerY="20" scaleX="{ 1 + 2*_horizontalPadding/this._boxWidth }" scaleY="{ 1 + 2*_verticalPadding/this.height }" />
+			</degrafa:TransformGroup>
+		</degrafa:transform>
+		
+	</degrafa:GeometryComposition>
+
+	<!-- scribble line under title -->
+
+	<degrafa:GeometryComposition graphicsTarget="{ [titleTextField] }">
+	
+		<degrafa:Path id="line" fill="{greySolid}" data="M-0.105,1.017c12.34,0.529,24.827-0.344,37.163-0.765C50.32-0.201,63.591-0.604,76.862-0.414c0.548,0.008,1.081-0.575,0.275-0.593C64.409-1.292,51.686-0.945,38.964-0.514C25.98-0.073,12.959-0.008-0.016,0.564C-0.43,0.583-0.624,0.994-0.105,1.017L-0.105,1.017z" />
+		
+		<degrafa:transform>
+			<degrafa:TransformGroup id="lineTransform">
+				<degrafa:TranslateTransform y="{titleTextField.height-5}" />
+				<degrafa:ScaleTransform scaleX="{titleTextField.width / 80}" />
+			</degrafa:TransformGroup>
+		</degrafa:transform>
+		
+	</degrafa:GeometryComposition>
+	
+	<!-- anchor -->
+	
+	<degrafa:GeometryComposition graphicsTarget="{ [this] }">
+		
+		<degrafa:Path id="anchorLine" 
+					  data="{ 'M 0,0' + 'Q ' + ( _boxX + _boxWidth/2 ) + ',0,' + (_boxX + _boxWidth/2)  + ',' + (_boxY + contentBox.height/2) }"
+					  filters="{ [whiteGlow] }">
+			<degrafa:decorators>
+				<decorators:DashedLineDecorator id="anchorLineDashLine" />
+			</degrafa:decorators>	
+		</degrafa:Path>
+		
+		<degrafa:Path id="anchor" 
+					  data="M15.876,3.711c-3.445-8.044-19.8-2.095-15.324,6.031c2.449,4.445,9.653,5.655,14.083,4.142c2.316-0.791,3.844-2.931,3.434-5.372c-0.529-3.146-4.639-5.384-7.243-6.463c-0.158-0.065-0.601,0.174-0.547,0.196c3.426,1.419,8.598,4.641,6.946,9.021c-2.354,6.242-13.432,2.328-16.093-1.68C-3.717,2.283,11.88-4.111,15.297,3.867C15.355,4.004,15.919,3.812,15.876,3.711L15.876,3.711z"
+					  filters="{ [whiteGlow] }">
+			<degrafa:transform>
+				<degrafa:TranslateTransform x="-8" y="-8" />
+			</degrafa:transform>	
+		</degrafa:Path>
+		
+		<degrafa:stroke>
+			<degrafa:SolidStroke color="0x000" alpha="1"/>
+		</degrafa:stroke>
+		
+		<degrafa:filters>
+			<mx:GlowFilter id="whiteGlow" alpha="0.5" blurX="7" blurY="7" strength="2" color="0xffffff" quality="2" />
+		</degrafa:filters>
+		
+	</degrafa:GeometryComposition>
+	
+	<!-- shadow blurring -->
+	
+	<filters:BlurFilter id="shadowBlur" blurX="4" blurY="6" quality="3" />
+	
+			<degrafa:SolidFill id="yellowSolid" color="0xff0" alpha="1" />
+			<degrafa:SolidFill id="greySolid" color="0x222" alpha="1" />
+			<degrafa:RadialGradientFill id="yellowGradient" radius="90" cx="30" cy="30">
+				<degrafa:GradientStop color="0xF7E8A8" alpha="1" />
+				<degrafa:GradientStop color="0xFFDE4B" alpha="1" />
+			</degrafa:RadialGradientFill>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import mx.controls.TextArea;
+			
+			[Bindable]
+			private var _horizontalPadding	:Number = 10;		
+			[Bindable]
+			private var _verticalPadding	:Number = 10;
+			
+		]]>
+	</mx:Script>
+	
+</skin:CommentSkinBase>

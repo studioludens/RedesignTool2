@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+				layout="absolute" 
+				creationComplete="creationCompleteHandler(event)" 
+				xmlns:editor="com.ludens.redesigntool.view.components.editor.*" 
+				xmlns:menus="com.ludens.redesigntool.view.components.menus.*">
+	
+	<!--<mx:Label x="8" y="10" text="RedesignerTool" width="266" height="41" styleName="title"/>-->
+	
+	<menus:TestMenu id="testMenu" left="10" top="50" bottom="20"  />	
+	
+	<menus:ExportMenu id="exportMenu" left="10" bottom="60" /> 
+	
+	<mx:Image id="studioLudens" width="120" height="29" left="10" bottom="20" buttonMode="true" source="assets/media/powered_by_studio_ludens2.png" click="ludensLink()" />								 
+	
+				
+	<editor:RedesignView id="redesignView"
+						 borderColor="0xcccccc" borderStyle="solid"
+						 backgroundColor="0xeeeeee" filters="{ [ dropShadow ] }"
+						 left="150" right="20" top="50" bottom="20"/>
+	
+	<mx:DropShadowFilter id="dropShadow" blurX="12" blurY="12" distance="2" color="0x000000" alpha="0.1" angle="45 " />
+	
+	<mx:Image id="logo" width="272" height="60" source="assets/media/logo_rdm_tool_no_subtitle.png" cacheAsBitmap="false" right="20" top="10"/>
+
+	
+	<mx:Style source="assets/style/style.css"/>
+	<mx:Script>
+		<![CDATA[
+			
+			import com.ludens.redesigntool.model.KeyboardProxy;
+			import mx.controls.HSlider;
+			import mx.core.UIComponent;
+			
+			import com.ludens.redesigntool.*;
+			import com.ludens.redesigntool.controller.*;
+			import com.ludens.redesigntool.model.helpers.*;
+			import com.ludens.redesigntool.model.om.*; 
+			
+			
+			/*
+				get the Application Facade instance to start the application with 
+			*/
+			private var facade:ApplicationFacade = ApplicationFacade.getInstance();
+			
+			/**
+			 * start up application when creation is completed
+			 */
+			private function creationCompleteHandler(e:Event):void {
+				
+				// let everybody know we have started up
+				facade.sendNotification(Notifications.STARTUP, this);
+				
+				
+				addEventListener( KeyboardEvent.KEY_DOWN, keyHandler, true );
+				addEventListener( KeyboardEvent.KEY_UP, keyHandler, true );
+			}
+			
+			private function sliderChangeHandler(e:Event):void {
+				
+				redesignView.scaleX = (e.target as HSlider).value;
+				redesignView.scaleY = (e.target as HSlider).value;
+			}
+		
+			
+			private function keyHandler( event:KeyboardEvent ):void {
+				
+				var keyboardProxy:KeyboardProxy = facade.retrieveProxy( KeyboardProxy.NAME ) as KeyboardProxy;
+				// set the shift key of the keyboard proxy to the value captured from the Keyboard event handler
+				keyboardProxy.shiftKey = event.shiftKey;
+				//trace("[APP] Keyboard Shift key = " + event.shiftKey);
+			}
+			
+			/** 
+			 * link to the studio:ludens website
+			 * 
+			 */
+			private function ludensLink():void{
+				navigateToURL( new URLRequest("http://www.studioludens.com/"), "_blank" );
+			}
+			
+		]]>
+	</mx:Script>
+	
+</mx:Application>

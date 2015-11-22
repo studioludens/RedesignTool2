@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="120" height="30">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import com.ludens.redesigntool.events.SaveEvent;
+			
+			[Embed(source="assets/media/save_design.png")]
+            [Bindable]
+            public var iconSymbol:Class;
+            
+			public function onSave():void{
+				// fire an event that we want to save the Redesign
+				
+				// for now, we get back an image
+				Alert.cancelLabel = "Cancel";
+				Alert.okLabel = "Save";
+				var alert:Alert = Alert.show("Do you want to save this Redesign and go back to the overview?\n\nNOTE: If you save this Redesign, it cannot be changed any more...", "Save Redesign", Alert.CANCEL | Alert.OK, this, saveCloseHandler, iconSymbol, Alert.OK);
+				
+				
+			}
+			
+			private function saveCloseHandler(e:CloseEvent):void{
+				
+				if(e.detail == Alert.OK){
+					var evt:SaveEvent = new SaveEvent(SaveEvent.SAVE);
+					dispatchEvent(evt);
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:Button id="exportButton" label="save now !" 
+				width="120" icon="@Embed('assets/media/save_design.png')"  height="28"
+				textAlign="left" horizontalGap="10" 
+				click="onSave()" buttonMode="true"/>
+</mx:Canvas>
